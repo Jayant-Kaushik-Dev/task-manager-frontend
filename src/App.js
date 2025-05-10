@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 //import './App.css';
 
-const API_URL = 'http://localhost:8000/tasks';
+const API_URL = 'https://task-manager-api-slu7.onrender.com';
 
 function App() {
   const [tasks, setTasks] = useState([]);
