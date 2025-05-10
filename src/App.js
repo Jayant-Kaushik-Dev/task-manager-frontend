@@ -1,71 +1,64 @@
-import React, { useEffect, useState } from 'react';
-//import './App.css';
-
-const API_URL = 'https://task-manager-api-slu7.onrender.com';
+import React, { useEffect, useState } from "react";
+import { API_BASE_URL } from "./config";
 
 function App() {
   const [tasks, setTasks] = useState([]);
-  const [newTaskName, setNewTaskName] = useState('');
+  const [newTaskName, setNewTaskName] = useState("");
 
-  // Fetch tasks on component mount
   useEffect(() => {
-    fetch(API_URL)
-      .then(response => response.json())
-      .then(data => setTasks(data.tasks));
+    fetch(`${API_BASE_URL}/tasks`)
+      .then((res) => res.json())
+      .then((data) => setTasks(data.tasks));
   }, []);
 
-  // Handle adding a new task
   const addTask = () => {
-    fetch(API_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+    fetch(`${API_BASE_URL}/tasks`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name: newTaskName, done: false }),
     })
-    .then(response => response.json())
-    .then(task => {
-      setTasks([...tasks, task]);
-      setNewTaskName('');
-    });
+      .then((res) => res.json())
+      .then((task) => setTasks([...tasks, task]));
   };
 
-  // Handle updating a task's done status
-  const toggleDone = (id, name, done) => {
-    fetch(`${API_URL}/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, done: !done }),
-    })
-    .then(response => response.json())
-    .then(updated => {
-      setTasks(tasks.map(t => (t.id === id ? updated : t)));
-    });
-  };
-
-  // Handle deleting a task
   const deleteTask = (id) => {
-    fetch(`${API_URL}/${id}`, { method: 'DELETE' })
-      .then(() => {
-        setTasks(tasks.filter(t => t.id !== id));
-      });
+    fetch(`${API_BASE_URL}/tasks/${id}`, {
+      method: "DELETE",
+    }).then(() => {
+      setTasks(tasks.filter((task) => task.id !== id));
+    });
+  };
+
+  const toggleTaskDone = (task) => {
+    fetch(`${API_BASE_URL}/tasks/${task.id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: task.name, done: !task.done }),
+    })
+      .then((res) => res.json())
+      .then((updatedTask) =>
+        setTasks(tasks.map((t) => (t.id === task.id ? updatedTask : t)))
+      );
   };
 
   return (
-    <div className="App">
+    <div>
       <h1>Task Manager</h1>
       <input
-        type="text"
         value={newTaskName}
-        onChange={e => setNewTaskName(e.target.value)}
-        placeholder="New task"
+        onChange={(e) => setNewTaskName(e.target.value)}
+        placeholder="Add a new task"
       />
-      <button onClick={addTask}>Add Task</button>
-
+      <button onClick={addTask}>Add</button>
       <ul>
-        {tasks.map(task => (
+        {tasks.map((task) => (
           <li key={task.id}>
             <span
-              style={{ textDecoration: task.done ? 'line-through' : 'none', cursor: 'pointer' }}
-              onClick={() => toggleDone(task.id, task.name, task.done)}
+              onClick={() => toggleTaskDone(task)}
+              style={{
+                textDecoration: task.done ? "line-through" : "none",
+                cursor: "pointer",
+              }}
             >
               {task.name}
             </span>
