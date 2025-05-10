@@ -1,71 +1,114 @@
-import React, { useEffect, useState } from "react";
-import { API_BASE_URL } from "./config";
+import React, { useState, useEffect } from "react";
+import API_URL from "./config";
 
 function App() {
   const [tasks, setTasks] = useState([]);
-  const [newTaskName, setNewTaskName] = useState("");
+  const [newTask, setNewTask] = useState("");
+  const [editingTask, setEditingTask] = useState(null);
+  const [editName, setEditName] = useState("");
+  const [editDone, setEditDone] = useState(false);
 
   useEffect(() => {
-    fetch(`${API_BASE_URL}/tasks`)
-      .then((res) => res.json())
-      .then((data) => setTasks(data.tasks));
+    fetchTasks();
   }, []);
 
-  const addTask = () => {
-    fetch(`${API_BASE_URL}/tasks`, {
+  const fetchTasks = () => {
+    fetch(`${API_URL}/tasks`)
+      .then((res) => res.json())
+      .then((data) => setTasks(data.tasks))
+      .catch((err) => console.error("Error fetching tasks:", err));
+  };
+
+  const handleAddTask = () => {
+    if (!newTask.trim()) return;
+
+    fetch(`${API_URL}/tasks`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: newTaskName, done: false }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ name: newTask }),
     })
       .then((res) => res.json())
-      .then((task) => setTasks([...tasks, task]));
+      .then(() => {
+        setNewTask("");
+        fetchTasks();
+      });
   };
 
-  const deleteTask = (id) => {
-    fetch(`${API_BASE_URL}/tasks/${id}`, {
+  const handleDeleteTask = (id) => {
+    fetch(`${API_URL}/tasks/${id}`, {
       method: "DELETE",
-    }).then(() => {
-      setTasks(tasks.filter((task) => task.id !== id));
-    });
-  };
-
-  const toggleTaskDone = (task) => {
-    fetch(`${API_BASE_URL}/tasks/${task.id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: task.name, done: !task.done }),
     })
       .then((res) => res.json())
-      .then((updatedTask) =>
-        setTasks(tasks.map((t) => (t.id === task.id ? updatedTask : t)))
-      );
+      .then(() => fetchTasks());
+  };
+
+  const startEditing = (task) => {
+    setEditingTask(task.id);
+    setEditName(task.name);
+    setEditDone(task.done);
+  };
+
+  const handleUpdateTask = () => {
+    fetch(`${API_URL}/tasks/${editingTask}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ name: editName, done: editDone }),
+    })
+      .then((res) => res.json())
+      .then(() => {
+        setEditingTask(null);
+        fetchTasks();
+      });
   };
 
   return (
-    <div>
+    <div style={{ padding: "2rem" }}>
       <h1>Task Manager</h1>
+
       <input
-        value={newTaskName}
-        onChange={(e) => setNewTaskName(e.target.value)}
-        placeholder="Add a new task"
+        type="text"
+        value={newTask}
+        onChange={(e) => setNewTask(e.target.value)}
+        placeholder="Enter a task"
       />
-      <button onClick={addTask}>Add</button>
+      <button onClick={handleAddTask}>Add Task</button>
+
       <ul>
         {tasks.map((task) => (
           <li key={task.id}>
-            <span
-              onClick={() => toggleTaskDone(task)}
-              style={{
-                textDecoration: task.done ? "line-through" : "none",
-                cursor: "pointer",
-              }}
-            >
-              {task.name}
+            <span>
+              {task.name} {task.done ? "(Done)" : ""}
             </span>
-            <button onClick={() => deleteTask(task.id)}>❌</button>
+            <button onClick={() => handleDeleteTask(task.id)}>Delete</button>
+            <button onClick={() => startEditing(task)}>Edit</button>
           </li>
         ))}
       </ul>
+
+      {editingTask && (
+        <div>
+          <h3>Edit Task</h3>
+          <input
+            type="text"
+            value={editName}
+            onChange={(e) => setEditName(e.target.value)}
+          />
+          <label>
+            <input
+              type="checkbox"
+              checked={editDone}
+              onChange={(e) => setEditDone(e.target.checked)}
+            />
+            Done
+          </label>
+          <button onClick={handleUpdateTask}>Update</button>
+          <button onClick={() => setEditingTask(null)}>Cancel</button>
+        </div>
+      )}
     </div>
   );
 }
