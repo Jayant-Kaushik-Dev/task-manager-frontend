@@ -68,7 +68,7 @@ function App() {
 
   return (
     <div style={{ padding: "2rem" }}>
-      <h1>Task Manager</h1>
+      <h1>Jayant's Task Manager</h1>
 
       <input
         type="text"
