@@ -31,7 +31,7 @@ Getting Started Locally:
 
 1. Clone the repository
    
-  git clone https://github.com/YOUR-USERNAME/task-manager-frontend.git
+  git clone https://github.com/Jayant-Kaushik-Dev/task-manager-frontend.git
   cd task-manager-frontend
   
 2. Install dependencies
