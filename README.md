@@ -42,7 +42,7 @@ Getting Started Locally:
     Make sure the API_URL in config.js points to your backend:
 
     config.js
-    export const API_URL = "https://your-backend-url.onrender.com"
+    export const API_URL = "https://task-manager-api-slu7.onrender.com"
 
 4. Start the development server
 
